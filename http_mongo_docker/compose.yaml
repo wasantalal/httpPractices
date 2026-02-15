@@ -1,0 +1,20 @@
+services:
+  http_mongo_docker:
+    image: http_mongo_docker
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./init-db.js:/docker-entrypoint-initdb.d/init-db.js:ro # Mount the seed script
+
+volumes:
+  mongo-data:
