@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "wasantalal/get_go:latest"
+        DOCKERHUB_CREDENTIALS = "96842ae0-a7b8-4b40-9641-1aee875d7682"
+        GITHUB_REPO = "https://github.com/wasantalal/httpPractices.git"
+    }
+
+    stages {
+
+        stage('Get Code From GitHub') {
+            steps {
+                echo "Cloning repository..."
+                git branch: 'main', url: "${GITHUB_REPO}"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker Image..."
+                script {
+                    docker.build("${DOCKER_IMAGE}")
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                echo "Logging into DockerHub and pushing image..."
+                script {
+
+                    docker.withRegistry(
+                        'https://registry.hub.docker.com',
+                        DOCKERHUB_CREDENTIALS
+                    ) {
+
+                        docker.image("${DOCKER_IMAGE}").push()
+
+                    }
+                }
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed."
+        }
+    }
+}
